@@ -3,10 +3,22 @@ const bcrypt = require("bcryptjs")
 const { generarJWT } = require("../helpers/jwt")
 
 const getUsuarios = async (req, res) => {
-  const usuarios = await Usuario.find()
+  const desde = Number(req.query.desde) || 0
+
+  /* const usuarios = await Usuario.find().skip(desde).limit(5)
+
+  const total = await Usuario.count() */
+  /* Los dos procesos comentados son asyncronos es decir que va a esperar a que termine uno para ejecutar el otro y esto puede llegar a tardar bastante, por eso jusntamos las promesas para que se resuelvan "al mismo tiempo"  */
+
+  const [usuarios, total] = await Promise.all([
+    Usuario.find().skip(desde).limit(5),
+    Usuario.count(),
+  ])
+
   res.json({
     ok: true,
     usuarios,
+    total,
   })
 }
 
@@ -34,15 +46,14 @@ const crearUsuarios = async (req, res) => {
     //Guardar usuario
     await usuario.save()
 
-     //Generar el token
+    //Generar el token
 
-     const token = await generarJWT(usuario.id)
-
+    const token = await generarJWT(usuario.id)
 
     res.json({
       ok: true,
       usuario,
-      token
+      token,
     })
   } catch (error) {
     console.log(error)
