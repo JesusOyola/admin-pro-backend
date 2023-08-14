@@ -101,10 +101,16 @@ const id = req.id
   //Generar el token
   const token = await generarJWT(id)
 
+  // Obtener el usuario por ID
+
+  const usuarioDB = await Usuario.findById(id)
+
+
 
   res.json({
     ok: true,
     token,
+    usuarioDB
   })
 }
 
